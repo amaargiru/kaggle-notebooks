@@ -242,7 +242,7 @@ Our neural network will be fully connected, meaning all neurons of the previous 
 
 # MLP
 
-## Код MLP
+## MLP Code
 
 
 ```python
@@ -541,7 +541,7 @@ This is called a locally connected layer. Imagine that the first neuron of the f
 
 A locally connected layer is not included in the standard PyTorch package set, but fortunately, people sometimes feel the urge to experiment, so an implementation of a locally connected layer can still be found.
 
-## Код локально связной сети
+## Locally Connected Network Code
 
 
 ```python
@@ -848,13 +848,13 @@ When discussing convolutional neural networks, people often use a simplification
 
 This simplification is: "a mask slides across the input image." In reality, no mask slides anywhere. This is merely a visual concept intended to explain the basic principles of convolution. You will never see code like this in practice, because while the result would be correct, it would be catastrophically slow:
 ```
-for b in range(B):                           # Батчи
-    for co in range(C_out):                  # Выходные каналы
-        for i in range(H_out):               # Высота выхода
-            for j in range(W_out):           # Ширина выхода
-                for ci in range(C_in):       # Входные каналы
-                    for ki in range(KH):     # Высота ядра
-                        for kj in range(KW): # Ширина ядра
+for b in range(B):                           # Batches
+    for co in range(C_out):                  # Output channels
+        for i in range(H_out):               # Output height
+            for j in range(W_out):           # Output width
+                for ci in range(C_in):       # Input channels
+                    for ki in range(KH):     # Kernel height
+                        for kj in range(KW): # Kernel width
                             output[b, co, i, j] += (input[b, ci, i * stride + ki, j * stride + kj] * kernel[co, ci, ki, kj])
 ```
 
@@ -904,7 +904,7 @@ w1  w2  w3  w4
 
 Multiply (here GEMM — General Matrix Multiply — is applied):
 ```
-М1 * М2 = строка (1 * 9)
+М1 * М2 = row (1 * 9)
 ```
 
 Each element of the result is a dot product of the kernel row and the corresponding column. For example, the first element equals w1·a + w2·b + w3·e + w4·f.
