@@ -2,7 +2,7 @@
 
 Formally, this is a notebook for participating in the educational competition "[Digit Recognizer](https://www.kaggle.com/competitions/digit-recognizer)" for handwritten digit recognition, but the actual purpose of this notebook is to explain the principles of convolutional neural networks to beginners. If you are just starting out with neural networks and don't fully understand how convolutional neural networks work yet, read this article — it might clarify things. You can study this material even if you've never worked with PyTorch before — all code is accompanied by detailed comments.
 
-Tags: Beginners, NN, MLP, CNN, MNIST.
+<img src= "https://raw.githubusercontent.com/amaargiru/kaggle-notebooks/refs/heads/main/images/01-PyTorch-MLP-CNN-MNIST-for-beginners/CNN_enriched_v3.jpg" alt ="Full model" style='width: 600px;'>
 
 # Preparatory Steps
 
@@ -10,9 +10,6 @@ Environment setup code:
 
 
 ```python
-notebook_name = 'kaggle.com/code/palegreendot/juggling-mnist'
-print(f"Hello from {notebook_name} notebook!\n")
-
 # The Python environment on Kaggle already contains
 # many necessary packages as per the image github.com/kaggle/docker-python
 
@@ -67,8 +64,6 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 from torchviz import make_dot
 ```
 
-    Hello from kaggle.com/code/palegreendot/juggling-mnist notebook!
-    
     Requirement already satisfied: torchviz in c:\Program Files\Python312\Lib\site-packages (0.0.3)
     Requirement already satisfied: torch in c:\Program Files\Python312\Lib\site-packages (from torchviz) (2.10.0+cu130)
     Requirement already satisfied: graphviz in c:\Program Files\Python312\Lib\site-packages (from torchviz) (0.21)
@@ -102,9 +97,9 @@ for dirname, _, filenames in os.walk('/kaggle/input'):
 
 If you're working with data directly on the Kaggle website, don't forget to enable a GPU in the settings.
 
-Computations can be done on CPU, but if a GPU is available it is **much** more far-sighted to set up and start using the GPU for calculations right away, otherwise the waiting time for results can grow indecently long.
+Computations can be done on CPU, but if a GPU is available it is **much** more prudent to set up and start using the GPU for calculations right away, otherwise the waiting time for results can grow unacceptably long.
 
-In principle, for tinkering with simple models on a local machine you can use CPU, but unfortunately, even a fairly powerful i9-13900K, which I had at the time of writing this article, even on relatively minimalist datasets like MNIST operates rather sluggishly, making you want to stop hovering over it and go get some coffee.
+In principle, for tinkering with simple models on a local machine you can use CPU, but unfortunately, even a fairly powerful i9-13900K, which I had at the time of writing this article, even on relatively minimalist datasets like MNIST operates rather sluggishly, making you want to stop staring at it and go get some coffee.
 
 If you want to use a GPU on your local machine but torch.cuda.is_available() returns False, you need to:  
 check CUDA availability for your GPU at https://developer.nvidia.com/cuda/gpus  
@@ -131,7 +126,7 @@ print(f'Using {device} device')
     True
     1
     0
-    <torch.cuda.device object at 0x000001964562ACF0>
+    <torch.cuda.device object at 0x000002BC5633DB20>
     NVIDIA GeForce RTX 4060
     Using cuda device
     
@@ -161,15 +156,7 @@ test_loader = DataLoader(test_data, batch_size=256, shuffle=False)
 print(f"Train: {len(train_data)}, Test: {len(test_data)}")
 ```
 
-    100%|██████████| 9.91M/9.91M [00:13<00:00, 737kB/s] 
-    100%|██████████| 28.9k/28.9k [00:00<00:00, 204kB/s]
-    100%|██████████| 1.65M/1.65M [00:04<00:00, 411kB/s]
-    100%|██████████| 4.54k/4.54k [00:00<00:00, 4.56MB/s]
-
     Train: 60000, Test: 10000
-    
-
-    
     
 
 ## Visualizing Loaded Data
@@ -205,7 +192,9 @@ img = np.squeeze(images[11])
 
 fig = plt.figure(figsize = (12,12)) 
 ax = fig.add_subplot(111)
-# Note that both here and above the "Blues" colormap is used, but adding "_r" inverts the colors. Handy!
+
+# Note that both here and above the "Blues" colormap is used,
+# but adding "_r" inverts the colors. Handy!
 ax.imshow(img, cmap='Blues_r')
 width, height = img.shape
 
@@ -230,13 +219,13 @@ for x in range(width):
 
 # Architecture Overview
 
-As the [table](https://en.wikipedia.org/wiki/MNIST_database#Classifiers) rom Wikipedia with MNIST solution methods suggests, the architecture of our network should be either a [Multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron) (MLP, the simplest neural network), or a [Convolutional neural network](https://en.wikipedia.org/wiki/Convolutional_neural_network) (CNN). There is also a more detailed [table](https://rodrigob.github.io/are_we_there_yet/build/classification_datasets_results.html), but that's worth diving into only after more thorough preparation.
+As the [table](https://en.wikipedia.org/wiki/MNIST_database#Classifiers) from Wikipedia with MNIST solution methods suggests, the architecture of our network should be either a [Multilayer perceptron](https://en.wikipedia.org/wiki/Multilayer_perceptron) (MLP, the simplest neural network), or a [Convolutional neural network](https://en.wikipedia.org/wiki/Convolutional_neural_network) (CNN). There is also a more detailed [table](https://rodrigob.github.io/are_we_there_yet/build/classification_datasets_results.html), but that's worth diving into only after more thorough preparation.
 
 I would like to take a slightly unconventional approach. Let's first work with a multilayer perceptron, then try to move on to a locally connected model (this is an intermediate step from MLP to CNN), and then switch to an actual CNN. I hope that experimenting with a locally connected neural network will help us understand the principles of convolutional neural networks more easily.
 
 Well then, let's take the simplest option for our first experience — a perceptron.
 
-The architecture for solving MNIST must accept an input tensor of length 28 * 28 = 784 and have an output tensor of length 10 — the number of classes the input image can belong to. We'll set the number of neurons in the hidden layer to 800, as recommended by the Wikipedia article mentioned above, which should give us an error of about 1.6% (i.e., out of 1000 images, 984 will be correctly recognized), which is quite good considering that the error rate for manual classification is also non-zero, and typically ranges, according to various sources, from 98.3% to 99.8% ("[Some cases of digits difficult to recognize, even for humans](https://www.mdpi.com/2076-3417/9/15/3169)").
+The architecture for solving MNIST must accept an input tensor of length 28 * 28 = 784 and have an output tensor of length 10 — the number of classes the input image can belong to. We'll set the number of neurons in the hidden layer to 800, as recommended by the Wikipedia article mentioned above, which should give us an error of about 1.6% (i.e., out of 1000 images, 984 will be correctly recognized), which is quite good considering that the accuracy for manual classification is also not perfect, and typically ranges, according to various sources, from 98.3% to 99.8% ("[Some cases of digits difficult to recognize, even for humans](https://www.mdpi.com/2076-3417/9/15/3169)").
 
 Our neural network will be fully connected, meaning all neurons of the previous layer are connected to all neurons of the next layer.
 
@@ -257,15 +246,16 @@ class Perceptron(nn.Module):
         # perfect for a perceptron. Slightly simplifies the syntax
         self.layers = nn.Sequential(
 
-            # Converts the input rectangular image into a long one-dimensional tensor without touching the batch axis
+            # Converts the input rectangular image into a long one-dimensional tensor
+            # without touching the batch axis
             nn.Flatten(),
 
             # Input layer. The number of inputs corresponds to the image resolution.
             # Linear = a "regular" neural network layer
             nn.Linear(28 * 28, 800),
 
-            # A bit of nonlinear neural magic — the activation function. ReLU(x) = max(0, x). Without this element
-            # the entire neural network would simply become a linear regression method
+            # A bit of nonlinear neural magic — the activation function. ReLU(x) = max(0, x).
+            # Without this element the entire neural network would simply become a linear regression method
             nn.ReLU(),
 
             # At each training step, a portion of neurons from the previous layer can be disabled to prevent overfitting
@@ -279,7 +269,8 @@ class Perceptron(nn.Module):
             # Output layer. The number of inputs equals the number of outputs from the previous layer,
             # and the number of outputs corresponds to the number of classes into which we classify the images
             nn.Linear(800, 10)
-            # This is the perfect place for the softmax activation function, but it's already built into CrossEntropyLoss (see below)
+            # This is the perfect place for the softmax activation function,
+            # but it's already built into CrossEntropyLoss (see below)
         )
     
     def forward(self, x):
@@ -405,10 +396,10 @@ def model_train():
 model_train()
 ```
 
-    Epoch 32  	Training Loss: 0.0354: 100%|██████████| 32/32 [03:51<00:00,  7.24s/it]
+    Epoch 32  	Training Loss: 0.0361: 100%|██████████| 32/32 [02:50<00:00,  5.33s/it]
 
     
-    Elapsed time: 0:03:52
+    Elapsed time: 0:02:51
     
 
     
@@ -465,7 +456,7 @@ def model_eval():
 model_eval()
 ```
 
-    Accuracy: 98.34%
+    Accuracy: 98.42%
     
 
 # Saving and Loading Models
@@ -476,7 +467,7 @@ Let's estimate the size of the resulting model. This will also be useful for lat
 
 The number of weights in one fully connected linear layer = number of inputs × number of outputs + number of outputs (accounting for bias).
 
-(784 * 800 + 800) + (800 * 800 + 800) + (800 * 10 + 10) = 1,276,810 weights.
+(784 x 800 + 800) + (800 x 800 + 800) + (800 x 10 + 10) = 1,276,810 weights.
 
 Let's verify:
 
@@ -527,11 +518,13 @@ MLP summary for MNIST recognition:
 
 # Model Visualization 2
 
-After saving the model, you can also apply another quite popular visualization tool — [Netron](https://github.com/lutzroeder/netron).  For the full model, the picture will look approximately like this: full_model.pth.png
+After saving the model, you can also apply another quite popular visualization tool — [Netron](https://github.com/lutzroeder/netron).  For the full model, the picture will look approximately like this:
+
+<img src= "https://raw.githubusercontent.com/amaargiru/kaggle-notebooks/refs/heads/main/images/01-PyTorch-MLP-CNN-MNIST-for-beginners/full_model.pth.png" alt ="Full model" style='width: 410px;'>
 
 # Locally Connected Network
 
-Before moving on to the actual convolutional network, let's try to take one step that, while not particularly efficient in terms of accuracy for the task at hand, will somewhat deepen our understanding of convolutional networks. After all, right now we could simply plug in PyTorch's built-in convolutional layers, and the code would look roughly the same as the previous model, giving us knowledge about using built-in functionality — that is, roughly nothing. Let's write our own analogue of a convolutional network ourselves, then the resulting code can give us a somewhat deeper understanding of what's happening, convolution will stop being magic and become simply a tool.
+Before moving on to the actual convolutional network, let's try to take one step that, while not particularly efficient in terms of accuracy for the task at hand, will somewhat deepen our understanding of convolutional networks. After all, right now we could simply plug in PyTorch's built-in convolutional layers, and the code would look roughly the same as the previous model, giving us knowledge about using built-in functionality — that is, roughly nothing. Let's write our own analogue of a convolutional network ourselves, then the resulting code can give us a somewhat deeper understanding of what's happening, convolution will stop being magic and become just a tool.
 
 Let's reason through this.
 
@@ -568,7 +561,7 @@ class LocallyConnected2d(nn.Module):
 
         # If the code below isn't entirely clear — don't worry, this is just a concept
         # intended to demonstrate that behind every PyTorch method lies concrete mathematics,
-        # and that sometimes you can implement the functionality you need bypassing the standard approaches
+        # and that sometimes you can implement the functionality you need by bypassing the standard approaches
     def forward(self, x):
         # Slide a kernel × kernel window across height (axis 2) and width (axis 3) with the given stride
         # We get all patches — cropped image fragments matching the kernel size, to which weights will be applied
@@ -649,10 +642,10 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 model_train()
 ```
 
-    Epoch 32  	Training Loss: 0.0080: 100%|██████████| 32/32 [08:39<00:00, 16.24s/it]
+    Epoch 32  	Training Loss: 0.0077: 100%|██████████| 32/32 [05:21<00:00, 10.03s/it]
 
     
-    Elapsed time: 0:08:40
+    Elapsed time: 0:05:21
     
 
     
@@ -696,7 +689,7 @@ Measuring model accuracy:
 model_eval()
 ```
 
-    Accuracy: 98.84%
+    Accuracy: 98.76%
     
 
 Our custom architecture uses GPU resources quite inefficiently, so the training time is unlikely to decrease compared to MLP, but the number of parameters has decreased significantly:
@@ -784,10 +777,10 @@ cudnn.benchmark = True
 model_train()
 ```
 
-    Epoch 32  	Training Loss: 0.0047: 100%|██████████| 32/32 [03:07<00:00,  5.87s/it]
+    Epoch 32  	Training Loss: 0.0035: 100%|██████████| 32/32 [06:40<00:00, 12.52s/it]
 
     
-    Elapsed time: 0:03:08
+    Elapsed time: 0:06:41
     
 
     
@@ -828,7 +821,7 @@ Accuracy:
 model_eval()
 ```
 
-    Accuracy: 98.94%
+    Accuracy: 98.84%
     
 
 
@@ -869,7 +862,7 @@ cudnn.benchmark = True
 
 So what options does PyTorch consider?
 
-The most popular method is called im2col + GEMM. It extracts all patches from the image (rectangular fragments matching the size of the kernel) and then "unrolls" the set of patches into a matrix where the number of rows equals the length of a patch (for example, if the kernel is three by three with three input channels, each column will contain twenty-seven numbers), and the number of columns equals the number of patches. The convolution kernel, in turn, is unrolled into a single-row matrix, after which the matrices are multiplied.
+The most popular method is called im2col + GEMM. It extracts all patches from the image (rectangular fragments matching the size of the kernel) and then "unrolls" the set of patches into a matrix where the number of rows equals the length of a patch (for example, if the kernel is three by three with three input channels, each row will contain twenty-seven numbers), and the number of columns equals the number of patches. The convolution kernel, in turn, is unrolled into a single-row matrix, after which the matrices are multiplied.
 
 Let's look at an example using a simple 4×4 image and a 2×2 kernel.
 
@@ -909,7 +902,7 @@ Multiply (here GEMM — General Matrix Multiply — is applied):
 
 Each element of the result is a dot product of the kernel row and the corresponding column. For example, the first element equals w1·a + w2·b + w3·e + w4·f.
 
-The trick is that GEMM is an incredibly fast algorithm that squeezes every last drop out of your computer's hardware capabilities. Assembly code, optimal use of processor cache, SIMD instructions, GPU hardware utilization, GPU parallelism — all of this is already baked into GEMM, carefully optimized, and tuned for one thing only: speed. Once you have managed to reduce your problem to matrix multiplication — that's it, just fire up the thermonuclear chainsaw that is GEMM and step aside so you don't get splattered.
+The trick is that GEMM is an incredibly fast algorithm that squeezes every last drop out of your hardware's capabilities. Assembly code, optimal use of processor cache, SIMD instructions, GPU hardware utilization, GPU parallelism — all of this is already baked into GEMM, carefully optimized, and tuned for one thing only: speed. Once you have managed to reduce your problem to matrix multiplication — that's it, just fire up the thermonuclear chainsaw that is GEMM and step aside so you don't get caught in the spray.
 
 And returning to our practical exercises — the resulting row of 9 numbers is reshaped back into a 3×3 matrix — and that is your output feature map.
 
@@ -921,4 +914,4 @@ That's all for now. I hope this guide has been useful to you and that you now ha
 
 If you are more comfortable working with GitHub, here is the address of this article there — [Understanding CNN Principles for Beginners | PyTorch | MNIST](https://github.com/amaargiru/kaggle-notebooks/blob/main/01-PyTorch-MLP-CNN-MNIST-for-beginners/01-PyTorch-MLP-CNN-MNIST-for-beginners.ipynb).
 
-Remember that the main learning tool is the code inside the notebooks. Something unclear? Found a error? Have something to add? Be sure to copy the notebook and test your assumptions by modifying and running the code.
+Remember that the main learning tool is the code inside the notebooks. Something unclear? Found an error? Have something to add? Be sure to copy the notebook and test your assumptions by modifying and running the code.
