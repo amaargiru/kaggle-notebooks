@@ -48,22 +48,9 @@ for dirname, _, filenames in os.walk('/kaggle/input'):
         print(os.path.join(dirname, filename))
 ```
 
-    /kaggle/input/datasets/hojjatk/mnist-dataset/train-images.idx3-ubyte
-    /kaggle/input/datasets/hojjatk/mnist-dataset/t10k-labels.idx1-ubyte
-    /kaggle/input/datasets/hojjatk/mnist-dataset/t10k-images.idx3-ubyte
-    /kaggle/input/datasets/hojjatk/mnist-dataset/train-labels.idx1-ubyte
-    /kaggle/input/datasets/hojjatk/mnist-dataset/t10k-labels-idx1-ubyte/t10k-labels-idx1-ubyte
-    /kaggle/input/datasets/hojjatk/mnist-dataset/t10k-images-idx3-ubyte/t10k-images-idx3-ubyte
-    /kaggle/input/datasets/hojjatk/mnist-dataset/train-labels-idx1-ubyte/train-labels-idx1-ubyte
-    /kaggle/input/datasets/hojjatk/mnist-dataset/train-images-idx3-ubyte/train-images-idx3-ubyte
-    /kaggle/input/competitions/digit-recognizer/sample_submission.csv
-    /kaggle/input/competitions/digit-recognizer/train.csv
-    /kaggle/input/competitions/digit-recognizer/test.csv
-    
-
 ## Конфигурация видеокарты
 
-**Важно: начиная с этой точки, вам нужно переключить видеокарту в Settings -> Accelerator на GPU P100. Ниже есть еще строчки текста, выделенные жирным, там вам нужно будет перключиться уже на GPU T4 x 2, TPU или сбросить текущую сессию. Запуск всего кода при помощи команды "Run All" обязтельно приведёт к ошибкам.**
+**Важно: начиная с этой точки, вам нужно переключить видеокарту в Settings -> Accelerator на GPU P100. Ниже есть еще строчки текста, выделенные жирным, там вам нужно будет переключиться уже на GPU T4 x 2 или сбросить текущую сессию. Запуск всего кода при помощи команды "Run All" обязательно приведёт к ошибкам.**
 
 Попробуем:
 
@@ -82,44 +69,10 @@ device = torch.accelerator.current_accelerator().type if torch.accelerator.is_av
 print(f'Using {device} device')
 ```
 
-    True
-    2
-    0
-    <torch.cuda.device object at 0x7a84085cf2c0>
-    Tesla T4
-    Using cuda device
-    
-
 
 ```python
 !nvidia-smi
 ```
-
-    Fri Apr 10 10:03:37 2026       
-    +-----------------------------------------------------------------------------------------+
-    | NVIDIA-SMI 580.105.08             Driver Version: 580.105.08     CUDA Version: 13.0     |
-    +-----------------------------------------+------------------------+----------------------+
-    | GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-    | Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-    |                                         |                        |               MIG M. |
-    |=========================================+========================+======================|
-    |   0  Tesla T4                       Off |   00000000:00:04.0 Off |                    0 |
-    | N/A   68C    P0             31W /   70W |     189MiB /  15360MiB |     21%      Default |
-    |                                         |                        |                  N/A |
-    +-----------------------------------------+------------------------+----------------------+
-    |   1  Tesla T4                       Off |   00000000:00:05.0 Off |                    0 |
-    | N/A   44C    P8              9W /   70W |       3MiB /  15360MiB |      0%      Default |
-    |                                         |                        |                  N/A |
-    +-----------------------------------------+------------------------+----------------------+
-    
-    +-----------------------------------------------------------------------------------------+
-    | Processes:                                                                              |
-    |  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
-    |        ID   ID                                                               Usage      |
-    |=========================================================================================|
-    |    0   N/A  N/A              55      C   /usr/bin/python3                        186MiB |
-    +-----------------------------------------------------------------------------------------+
-    
 
 ## Загрузка датасетов
 
@@ -135,17 +88,6 @@ test_loader = DataLoader(test_data, batch_size=256, shuffle=False)
 
 print(f"Train: {len(train_data)}, Test: {len(test_data)}")
 ```
-
-    100%|██████████| 9.91M/9.91M [00:00<00:00, 40.3MB/s]
-    100%|██████████| 28.9k/28.9k [00:00<00:00, 1.13MB/s]
-    100%|██████████| 1.65M/1.65M [00:00<00:00, 9.28MB/s]
-    100%|██████████| 4.54k/4.54k [00:00<00:00, 10.7MB/s]
-
-    Train: 60000, Test: 10000
-    
-
-    
-    
 
 # Одиночный GPU
 
@@ -183,25 +125,6 @@ print(f"\nModel structure: {model}\n\n")
 # for name, param in model.named_parameters():
 #    print(f"Layer: {name} Size: {param.size()}  Values: {param[:2]} \n")
 ```
-
-    
-    Model structure: CNN_Net(
-      (net): Sequential(
-        (0): Conv2d(1, 16, kernel_size=(3, 3), stride=(1, 1))
-        (1): ReLU()
-        (2): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-        (3): Conv2d(16, 32, kernel_size=(3, 3), stride=(1, 1))
-        (4): ReLU()
-        (5): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-        (6): Flatten(start_dim=1, end_dim=-1)
-        (7): Linear(in_features=800, out_features=128, bias=True)
-        (8): ReLU()
-        (9): Linear(in_features=128, out_features=10, bias=True)
-      )
-    )
-    
-    
-    
 
 ## Настройка CNN
 
@@ -259,15 +182,6 @@ def model_train():
 model_train()
 ```
 
-    Epoch 16  	Training Loss: 0.0062: 100%|██████████| 16/16 [02:48<00:00, 10.53s/it]
-
-    
-    Elapsed time: 0:02:48
-    
-
-    
-    
-
 Время обучения нейросети на GPU P100: 02:39
 
 ## График ошибки CNN
@@ -280,12 +194,6 @@ plt.plot(train_loss_curve, linewidth=2)
 plt.grid(True)
 plt.show()
 ```
-
-
-    
-![png](readme-ru_files/readme-ru_19_0.png)
-    
-
 
 Измерим точность модели на тестовых данных:
 
@@ -310,9 +218,6 @@ def model_eval():
 model_eval()
 ```
 
-    Accuracy: 99.03%
-    
-
 Accuracy: 98.95%
 
 ## Увеличение размера батча
@@ -334,24 +239,12 @@ model_train()
 train_loader = DataLoader(train_data, batch_size=32, shuffle=True)
 ```
 
-    Epoch 16  	Training Loss: 0.0200: 100%|██████████| 16/16 [01:48<00:00,  6.79s/it]
-
-    
-    Elapsed time: 0:01:49
-    
-
-    
-    
-
 Время обучения на GPU P100 при большом размере батча: 01:48
 
 
 ```python
 model_eval()
 ```
-
-    Accuracy: 98.77%
-    
 
 
 ```python
@@ -372,12 +265,6 @@ plt.grid(True)
 plt.show()
 ```
 
-
-    
-![png](readme-ru_files/readme-ru_27_0.png)
-    
-
-
 Хорошо видно, что увеличение размеров батча отразилось на точности обучения самым плачевным образом. Разумеется, в зависимости от конкретной решаемой задачи регулировать размер батча можно и нужно, но делать это надо с умом.
 
 # Сдвоенный GPU
@@ -395,11 +282,11 @@ GPU P100 vs GPU T4
 | Архитектура | Pascal | Turing |
 | CUDA-ядра | 3584 | 2560 |
 | Память | 16 GB HBM2 | 16 GB GDDR6 |
-| Пропускная способность памяти | ~732 GB/s | ~320 GB/s |
-| FP32 производительность | ~9.3 TFLOPS | ~8.1 TFLOPS |
+| Пропускная способность памяти | ~ 732 GB/s | ~ 320 GB/s |
+| FP32 производительность | ~ 9.3 TFLOPS | ~ 8.1 TFLOPS |
 | TDP | 250W | 70W |
 
-T4 — это карта, ориентированная в первую очередь на инференс и энергоэффективность. По приведённым данным видно, что используя Nvidia T4, мы явно уменьшим Kaggle счета на электроэнергию. Но удастся ли нам грамотно расспараллелить вычисления и ускорить обучение, не теряя точности?
+T4 — это карта, ориентированная в первую очередь на инференс и энергоэффективность. По приведённым данным видно, что используя Nvidia T4, мы явно уменьшим Kaggle счета на электроэнергию. Но удастся ли нам грамотно распараллелить вычисления и ускорить обучение, не теряя точности?
 
 Повторяем тест GPU:
 
@@ -417,14 +304,6 @@ if torch.cuda.is_available():
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else 'cpu'
 print(f'Using {device} device')
 ```
-
-    True
-    2
-    0
-    <torch.cuda.device object at 0x7a8408211e50>
-    Tesla T4
-    Using cuda device
-    
 
 
 ```python
@@ -444,15 +323,6 @@ optimizer = optim.Adam(model.parameters(), lr=1e-3)
 model_train()
 ```
 
-    Epoch 16  	Training Loss: 0.0043: 100%|██████████| 16/16 [02:45<00:00, 10.32s/it]
-
-    
-    Elapsed time: 0:02:45
-    
-
-    
-    
-
 Время обучения а GPU T4 x 2 без расспаралелливания PyTorch: 02:39.
 
 
@@ -462,7 +332,7 @@ model_eval()
 
 Accuracy: 99.16%.
 
-Итак, при использовании только одного GPU из сдвоенного T4 мы видим существенную потерю в скорости обучения. Похоже, архитектура Turing GPU T4 не компенсирует снижение пропускной способности памяти. Вывод - если ваш код не оптимизирован для расспаралелливания на несколько GPU, не включайте в настройках ноутбука Kaggle сдвоенную видеокарту, получите замедление обучения на ровном месте.
+Итак, при использовании только одного GPU из сдвоенного T4 мы видим существенную потерю в скорости обучения. Похоже, архитектура Turing GPU T4 не компенсирует снижение пропускной способности памяти. Вывод - если ваш код не оптимизирован для распараллеливания на несколько GPU, не включайте в настройках ноутбука Kaggle сдвоенную видеокарту, получите замедление обучения на ровном месте.
 
 ## DataParallel
 
@@ -542,15 +412,6 @@ def accel_model_train():
 
 accel_model_train()
 ```
-
-    Epoch 16  	Training Loss: 0.0046: 100%|██████████| 16/16 [02:56<00:00, 11.05s/it]
-
-    
-    Elapsed time: 0:02:57
-    
-
-    
-    
 
 Код остался практически идентичным тому, который мы использовали в самом начале, отличия только в `accelerator.prepare()` и `accelerator.backward()`. Код не вызывает ошибки, но, к сожалению, **использует только один GPU**, что хорошо видно в "Session Metrics".
 
@@ -672,30 +533,11 @@ with open("train_script.py", "w") as f:
 print("train_script.py written successfully")
 ```
 
-    train_script.py written successfully
-    
-
 
 ```python
 # Запускаем распределённое обучение на 2 GPU
 !accelerate launch --multi_gpu --num_processes 2 train_script.py
 ```
-
-    The following values were not passed to `accelerate launch` and had defaults used instead:
-    	`--num_machines` was set to a value of `1`
-    	`--mixed_precision` was set to a value of `'no'`
-    	`--dynamo_backend` was set to a value of `'no'`
-    To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
-    Device: cuda:0
-    Num processes: 2
-    Distributed type: DistributedType.MULTI_GPU
-    Epoch 16  	Training Loss: 0.0027: 100%|█████████| 16/16 [01:36<00:00,  6.04s/it]
-    
-    Elapsed time: 0:01:37
-    Epoch 16  	Training Loss: 0.0028: 100%|█████████| 16/16 [01:36<00:00,  6.04s/it]
-    Training complete! Model saved to mnist_cnn.pth
-    [rank0]:[W410 10:25:02.864268029 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
-    
 
 Наконец-то нам удалось добиться включения в работу второго GPU!
 
@@ -800,32 +642,13 @@ accelerator.save(unwrapped.state_dict(), "mnist_cnn.pth")
 accelerator.print("Training complete! Model saved to mnist_cnn.pth")
 ```
 
-    Overwriting train_script.py
-    
-
 
 ```python
 !accelerate launch --multi_gpu --num_processes 2 train_script.py
 ```
 
-    The following values were not passed to `accelerate launch` and had defaults used instead:
-    	`--num_machines` was set to a value of `1`
-    	`--mixed_precision` was set to a value of `'no'`
-    	`--dynamo_backend` was set to a value of `'no'`
-    To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
-    Device: cuda:0
-    Num processes: 2
-    Distributed type: DistributedType.MULTI_GPU
-    Epoch 16  	Training Loss: 0.0038: 100%|█████████| 16/16 [01:34<00:00,  5.91s/it]
-    Epoch 16  	Training Loss: 0.0027: 100%|█████████| 16/16 [01:34<00:00,  5.91s/it]
-    
-    Elapsed time: 0:01:35
-    Training complete! Model saved to mnist_cnn.pth
-    [rank0]:[W410 10:31:42.645012654 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
-    
-
 # Заключение
 
-На этом пока всё, надеюсь, это руководство было для вас полезным, и теперь вам будет немног прощу ускорить обучение своей нейронной сети при помощи сдвоенного GPU.
+На этом пока всё, надеюсь, это руководство было для вас полезным, и теперь вам будет немного проще ускорить обучение своей нейронной сети при помощи сдвоенного GPU.
 
 Пожалуйста, дайте мне знать в комментариях к этому ноутбуку, если вам удалось обойти ограничения, связанные с notebook_launcher.
